@@ -1,0 +1,20 @@
+{
+  "name": "react",
+  "version": "1.0.0",
+  "description": "This is react by Kunal",
+  "homepage": "https://github.com/Lord-Shad0w/react-kunal#readme",
+  "bugs": {
+    "url": "https://github.com/Lord-Shad0w/react-kunal/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/Lord-Shad0w/react-kunal.git"
+  },
+  "license": "ISC",
+  "author": "Kunal Kumar",
+  "type": "commonjs",
+  "main": "App.js",
+  "scripts": {
+    "test": "jest"
+  }
+}
