@@ -13,8 +13,17 @@
   "license": "ISC",
   "author": "Kunal Kumar",
   "type": "commonjs",
-  "main": "App.js",
   "scripts": {
     "test": "jest"
-  }
+  },
+  "devDependencies": {
+    "parcel": "^2.16.4"
+  },
+  "dependencies": {
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6"
+  },
+  "browserslist": [
+    "last 2 versions"
+  ]
 }
