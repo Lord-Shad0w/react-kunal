@@ -1,66 +1,114 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+const { resLists } = require("./restaurantData");
+/**
+ * Header
+ *    - Logo
+ *     - Nav Items(Home, About, Cart)
+ * Body
+ *    - Search Bar
+ *    -Restaurant Container
+ *      - Restaurant Card(Details in Notepad++)
+ * Footer
+ *    -Copyright
+ *    - Links
+ *    - Address
+ *    - Contact
+ */
 
-// const heading1 = (i) =>
-//   React.createElement("h1", { id: "head1" + i }, "Hello World!");
+const Logo = () => {
+  const logoImg = require("url:./resources/logo/delLogo.png");
+  return <img className="logo-img" src={logoImg} alt="DeliveryLogo" />;
+};
 
-// const heading2 = (i) =>
-//   React.createElement("h2", { id: "head2" + i }, "Namaste React!");
+const ResImg = ({ id }) => (
+  <img
+    className="res-img"
+    src={
+      "https://media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto,w_660/" +
+      id
+    }
+    alt="RestaurantImage"
+  />
+);
 
-// const div1 = React.createElement("div", { id: "container1" }, [
-//   heading1(1),
-//   heading2(1),
-// ]);
+const ResDetails = ({ resData }) => {
+  const { name, cuisines, avgRatingString, sla, costForTwo } = resData;
 
-// const div2 = React.createElement("div", { id: "container2" }, [
-//   heading1(2),
-//   heading2(2),
-// const heading = React.createElement("div", { id: "parent" }, [div1, div2]);
-// ]);
+  return (
+    <div className="res-details">
+      <h3 className="res-name">{name}</h3>
+      <p className="res-cuisines">{cuisines.join(", ")}</p>
+      <div className="res-info">
+        <div className="res-rating-container">
+          <img
+            className="res-star"
+            src={require("url:./resources/starIcon.png")}
+            alt="Star"
+          />
+          <span className="res-rating">{avgRatingString} </span>
+        </div>
+        <span className="res-delivery-time">{sla.slaString}</span>
+      </div>
+      <div className="res-cost">
+        <span className="res-cost-for-two">{costForTwo}</span>
+      </div>
+    </div>
+  );
+};
 
-//React Elements
-const headingEl = (
-  <div>
-    <h2 className="head">Hello! React using react elements</h2>
+const NavItems = () => (
+  <ul className="nav-items-list">
+    <li>Home</li>
+    <li>About</li>
+    <li>Cart</li>
+    <li>Support</li>
+  </ul>
+);
+
+const HeaderComponent = () => (
+  <div className="header">
+    <div className="logo">
+      <Logo />
+    </div>
+    <div className="nav-items">
+      <NavItems />
+    </div>
   </div>
 );
-
-//React Component- 2 types:
-//Class Based Component (lrgacy, old way of writing components ) generally not used now a days
-// Function based component (Modern way of writing components, generally used now a days)
-
-//Function based component
-const Title = ({ children }) => (
-  <h1 className="headComp">
-    Namaste React using nested Functional Component
-    {children}
-  </h1>
+const SearchProduct = () => (
+  <div className="search-container">Search for restaurants or dishes</div>
 );
-const Span = () => (
-  <span className="spanComp">
-    Namaste React using nested Functional Component span
-  </span>
-);
-const HeadingComponent = () => (
-  <div>
-    <Title />
-    <Title>
-      <Span />
-    </Title>
-    {Title({ children: <Span /> })}
-    <h2 className="headComponent">Hello! Functional React Component </h2>
-  </div>
-); // This is component composition, we are using one component inside another component
+const RestaurantCard = (props) => {
+  const { info } = props?.resData;
+  return (
+    <div className="res-card">
+      <ResImg id={info.cloudinaryImageId} />
+      <ResDetails resData={info} />
+    </div>
+  );
+};
 
-const RenderElInComponent = () => (
-  <div>
-    {headingEl}
-    <HeadingComponent />
-  </div>
+const Body = () => (
+  <>
+    <SearchProduct />
+    <div className="res-container">
+      {resLists.map((restaurant) => (
+        <RestaurantCard resData={restaurant} />
+      ))}
+    </div>
+  </>
 );
 
+const AppLayout = () => (
+  <>
+    <header>
+      <div className="main-header">{HeaderComponent()}</div>
+    </header>
+    <main>
+      <Body />
+    </main>
+  </>
+);
 const root = ReactDOM.createRoot(document.getElementById("root"));
-
-// root.render(headingEl);
-root.render(<HeadingComponent />);
-// root.render(<RenderElInComponent />);
+root.render(<AppLayout />);
