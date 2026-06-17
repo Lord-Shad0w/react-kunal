@@ -16,3 +16,7 @@
 # - Links
 # - Address
 # - Contact
+
+# two most important hooks
+# useState() : used to create super powerful state variables in react
+# useEffect()

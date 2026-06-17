@@ -1,19 +1,95 @@
 import RestaurantCard from "./RestaurantCard";
-const { resLists } = require("../../restaurantData");
+import { useState } from "react";
+import Location from "./Location";
 
-const SearchProduct = () => (
-  <div className="search-container">Search for restaurants or dishes</div>
+const FilterProduct = ({ restaurants, setFilteredRes }) => (
+  <div className="filter-container">
+    <button
+      className="filter-btn"
+      onClick={() => {
+        const topRatedRestaurants = restaurants.filter(
+          (res) => Number(res?.info?.avgRating) >= 4.3,
+        );
+        setFilteredRes(topRatedRestaurants);
+      }}
+      type="button"
+    >
+      Top Rated
+    </button>
+  </div>
 );
 
-const Body = () => (
-  <>
-    <SearchProduct />
-    <div className="res-container">
-      {resLists.map((restaurant) => (
-        <RestaurantCard key={restaurant.info.id} resData={restaurant} /> //don't use index as key, use unique id from data. We can use as it won't give an error/warning but its not recommended as practice. It fails when we add new item in between and react gets confused.
-      ))}
+const SearchProduct = ({ restaurants, setFilteredRes }) => {
+  const [searchRes, setSearchRes] = useState("");
+
+  return (
+    <div className="search-container">
+      <input
+        type="text"
+        className="search-res"
+        placeholder="Search restaurant"
+        value={searchRes}
+        onChange={(e) => setSearchRes(e.target.value)}
+      />
+      <button
+        className="search-btn"
+        type="button"
+        onClick={() => {
+          const filteredLists = searchRes.trim()
+            ? restaurants.filter((res) =>
+                res?.info?.name.toLowerCase().includes(searchRes.toLowerCase()),
+              )
+            : restaurants;
+          setFilteredRes(filteredLists);
+        }}
+      >
+        Search
+      </button>
     </div>
-  </>
+  );
+};
+
+const Body = () => (
+  <Location>
+    {({
+      restaurants,
+      searchedRes,
+      setSearchedRes,
+      locationMessage,
+      locationError,
+      showLocationMessage,
+      dataLoading,
+    }) => (
+      <>
+        {!dataLoading && (
+          <>
+            <div className="controls-row">
+              <div className="filter-search-container">
+                <SearchProduct
+                  restaurants={restaurants}
+                  setFilteredRes={setSearchedRes}
+                />
+                <FilterProduct
+                  restaurants={restaurants}
+                  setFilteredRes={setSearchedRes}
+                />
+              </div>
+              {showLocationMessage && (
+                <div className="location-inline">
+                  <p>{locationError || locationMessage}</p>
+                </div>
+              )}
+            </div>
+            <div className="res-container">
+              {searchedRes.map((restaurant) => (
+                <RestaurantCard key={restaurant.info.id} resData={restaurant} />
+              ))}
+            </div>
+          </>
+        )}
+      </>
+    )}
+  </Location>
 );
 
 export default Body;
