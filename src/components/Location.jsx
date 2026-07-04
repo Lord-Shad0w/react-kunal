@@ -2,6 +2,32 @@ import { useEffect, useRef, useState } from "react";
 import urls from "../utils/dataUrls";
 import Shimmer from "./ShimmerLoad";
 
+export const getCurrentCoordinates = () => {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error("Geolocation is not available in this browser."));
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        resolve({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        });
+      },
+      (error) => {
+        reject(error);
+      },
+      {
+        timeout: 10000,
+        maximumAge: 600000,
+        enableHighAccuracy: true,
+      },
+    );
+  });
+};
+
 const Location = ({ children }) => {
   const [restaurants, setRestaurants] = useState([]);
   const [searchedRes, setSearchedRes] = useState([]);
@@ -39,7 +65,7 @@ const Location = ({ children }) => {
 
       return city || county || displayName?.split(",")[0] || "your area";
     } catch (error) {
-      console.warn("Reverse geocode failed for", url, error);
+      console.warn("Reverse geocode failed for", endpoints, error);
     }
 
     return "your area";
@@ -89,32 +115,20 @@ const Location = ({ children }) => {
   };
 
   useEffect(() => {
-    if (!navigator.geolocation) {
-      setLocationError("Geolocation is not available in this browser.");
-      fetchRestaurant(defaultLocation);
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        fetchRestaurant({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        });
-      },
-      (error) => {
+    const loadLocationData = async () => {
+      try {
+        const currentLocation = await getCurrentCoordinates();
+        await fetchRestaurant(currentLocation);
+      } catch (error) {
         console.warn("Geolocation error:", error.message);
         setLocationError(
           "Could not access current location. Using default location.",
         );
-        fetchRestaurant(defaultLocation);
-      },
-      {
-        timeout: 10000,
-        maximumAge: 600000,
-        enableHighAccuracy: true,
-      },
-    );
+        await fetchRestaurant(defaultLocation);
+      }
+    };
+
+    loadLocationData();
 
     return () => {
       if (messageTimer.current) {

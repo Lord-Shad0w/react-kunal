@@ -31,9 +31,17 @@ const Shimmer = ({ locationMessage, locationError, showLocationMessage }) => {
   );
 };
 
-export const shopShimmer = () => {
+export const ShopShimmer = () => {
   return (
-    <div></div>
+    <div>
+      <div className="rest-outlet-shimmer"></div>
+      <div className="rest-offer-shimmer"></div>
+      <div className="rest-menu-card-shimmer"></div>
+      <div className="rest-menu-card-shimmer"></div>
+      <div className="rest-menu-card-shimmer"></div>
+      <div className="rest-menu-card-shimmer"></div>
+      <div className="rest-menu-card-shimmer"></div>
+    </div>
   );
 };
 

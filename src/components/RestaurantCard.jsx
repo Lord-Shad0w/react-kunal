@@ -34,7 +34,7 @@ const ResDetails = ({ resData }) => {
 const RestaurantCard = (props) => {
   const { info } = props?.resData;
   return (
-    <div className="res-card">
+    <div >
       <ResImg id={info.cloudinaryImageId} />
       <ResDetails resData={info} />
     </div>

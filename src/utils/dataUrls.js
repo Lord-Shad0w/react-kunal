@@ -3,6 +3,7 @@ const urls = {
   swiggyApi: {
     baseUrlRestaurant: (lat = 18.5904779, lng = 73.7271909) =>
       `https://www.swiggy.com/dapi/restaurants/list/v5?lat=${lat}&lng=${lng}&is-seo-homepage-enabled=true&page_type=DESKTOP_WEB_LISTING`,
+    restUrl: (lat, lng, restId) => `https://www.swiggy.com/mapi/menu/pl?page-type=REGULAR_MENU&complete-menu=true&lat=${lat}&lng=${lng}&restaurantId=${restId}`,
   }
 }
 

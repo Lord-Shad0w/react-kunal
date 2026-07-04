@@ -1,6 +1,7 @@
 import RestaurantCard from "./RestaurantCard";
 import { useState } from "react";
 import Location from "./Location";
+import { Link } from "react-router";
 
 const FilterProduct = ({ restaurants, setFilteredRes }) => (
   <div className="filter-container">
@@ -82,7 +83,9 @@ const Body = () => (
             </div>
             <div className="res-container">
               {searchedRes.map((restaurant) => (
-                <RestaurantCard key={restaurant.info.id} resData={restaurant} />
+                  <Link to={"/restaurants/" + restaurant.info.id} key={restaurant.info.id} className="res-card">
+                  <RestaurantCard resData={restaurant} ></RestaurantCard>
+                  </Link>
               ))}
             </div>
           </>

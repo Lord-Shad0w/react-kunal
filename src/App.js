@@ -7,6 +7,7 @@ import Body from "./components/Body";
 import Error from "./components/ErrorPage";
 import About from "./components/About";
 import Support from "./components/Support";
+import RestaurantShop from "./components/RestaurantShop";
 
 const AppLayout = () => (
   <>
@@ -38,6 +39,10 @@ const appRouter = createBrowserRouter([
         path: "/support",
         element: <Support />,
       },
+      {
+        path: "/restaurants/:resId",
+        element: <RestaurantShop />
+      }
     ],
     errorElement: <Error />,
   },
