@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router";
 import { ShopShimmer } from "./ShimmerLoad";
 import { getCurrentCoordinates } from "./Location";
@@ -13,7 +13,11 @@ const RestaurantShop = () => {
   const [restInfo, setRestInfo] = useState(null);
   const [couponDetails, setCouponDetails] = useState(null);
   const [menus, setMenus] = useState(null);
+  const [orgMenu, setOrgMenu] = useState(null);
   const { resId } = useParams();
+  const scrollRef = useRef(null);
+  const [scrollLeft, setScrollLeft] = useState(false);
+  const [scrollRight, setScrollRight] = useState(true);
 
   const fetchData = async () => {
     const { lat, lng } = await getCurrentCoordinates();
@@ -25,8 +29,37 @@ const RestaurantShop = () => {
         .offers;
     const menusData =
       await shopData.data?.cards[5]?.groupedCard?.cardGroupMap?.REGULAR?.cards;
-    console.log(menusData);
-
+    const finalMenu = menusData
+      .filter((item) => {
+        const card = item.card.card;
+        return card.title !== undefined && card.itemCards !== undefined;
+      })
+      .map((item) => {
+        const card = item.card.card;
+        return {
+          title: card.title,
+          categoryId: card.categoryId,
+          itemCards: card.itemCards.map((itemCard) => {
+            const info = itemCard?.card?.info;
+            return {
+              id: info?.id,
+              itemName: info?.name,
+              description: (info?.description || " No Description").replace(
+                /\u00A0/g,
+                " ",
+              ),
+              imageId: info?.imageId,
+              isVeg: info?.itemAttribute.vegClassifier,
+              price: Math.round(
+                Number(info?.defaultPrice || info?.finalPrice || info?.price) /
+                  100,
+              ),
+              rating: info?.ratings.aggregatedRating.rating,
+              totalRating: info?.ratings.aggregatedRating.ratingCountV2,
+            };
+          }),
+        };
+      });
     setRestInfo({
       resName: processedInfo?.name,
       avgRating: processedInfo?.avgRatingString,
@@ -47,55 +80,29 @@ const RestaurantShop = () => {
         };
       }),
     );
-    setMenus(
-      menusData
-        .filter((item) => {
-          const card = item.card.card;
-          return card.title !== undefined && card.itemCards !== undefined;
-        })
-        .map((item) => {
-          const card = item.card.card;
-          return {
-            title: card.title,
-            categoryId: card.categoryId,
-            itemCards: card.itemCards.map((itemCard) => {
-              const info = itemCard?.card?.info;
-              return {
-                id: info?.id,
-                itemName: info?.name,
-                description: (info?.description || " No Description").replace(
-                  /\u00A0/g,
-                  " ",
-                ),
-                imageId: info?.imageId,
-                isVeg: info?.itemAttribute.vegClassifier,
-                price: Math.round(
-                  Number(
-                    info?.defaultPrice || info?.finalPrice || info?.price,
-                  ) / 100,
-                ),
-                rating: info?.ratings.aggregatedRating.rating,
-                totalRating: info?.ratings.aggregatedRating.ratingCountV2,
-              };
-            }),
-          };
-        }),
-    );
+    setMenus(finalMenu);
     setShopDetails(processedInfo);
+    setOrgMenu(finalMenu);
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  useEffect(() => {
-    console.log("menus:", menus);
-    console.log("openCategoryId:", openCategoryId);
-    if (menus?.length > 0 && openCategoryId.size === 0) {
-      console.log("Setting first category to:", menus[0].categoryId);
-      setOpenCategoryId(new Set([menus[0].categoryId]));
+  const filterByType = () => {
+    if (!orgMenu) return;
+    if (selectedFilter === "none") {
+      setMenus(orgMenu);
+      return;
     }
-  }, [menus]);
+    const targetType = selectedFilter === "veg" ? "VEG" : "NONVEG";
+    setMenus(
+      orgMenu
+        .map((category) => ({
+          ...category,
+          itemCards: category.itemCards.filter(
+            (food) => food.isVeg === targetType,
+          ),
+        }))
+        .filter((category) => category.itemCards.length > 0),
+    );
+  };
 
   const toggle = (id) => {
     setOpenCategoryId((prev) => {
@@ -104,6 +111,38 @@ const RestaurantShop = () => {
       return next;
     });
   };
+
+  const checkScrollPosition = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setScrollLeft(el.scrollLeft > 0);
+    setScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
+  };
+
+  const scroll = (direction) => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    const scrollAmt = el.clientWidth * 0.8;
+    el.scrollBy({
+      left: direction === "left" ? -scrollAmt : scrollAmt,
+      behavior: "smooth",
+    });
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    if (menus?.length > 0 && openCategoryId.size === 0) {
+      setOpenCategoryId(new Set([menus[0].categoryId]));
+    }
+  }, [menus]);
+
+  useEffect(() => filterByType(), [selectedFilter]);
+
+  useEffect(() => checkScrollPosition(), [couponDetails]);
 
   if (shopDetails === null) return <ShopShimmer />;
 
@@ -170,19 +209,22 @@ const RestaurantShop = () => {
             <button
               aria-label="click here to move previous"
               className="left-arrow"
-              disabled
+              onClick={() => scroll("left")}
+              disabled={!scrollLeft}
             >
               &#8592;
             </button>
             <button
               aria-label="click here to move next"
               className="right-arrow"
+              onClick={() => scroll("right")}
+              disabled={!scrollRight}
             >
               &#8594;
             </button>
           </div>
         </div>
-        <div className="row">
+        <div className="row" ref={scrollRef} onScroll={checkScrollPosition}>
           {couponDetails.map((coupon) => (
             <div className="coupons-info-box" key={coupon.id}>
               <div className="coupon-info margin-cmn">{coupon.header}</div>
@@ -214,7 +256,9 @@ const RestaurantShop = () => {
             <button
               type="button"
               className={`slider-dot veg-dot ${selectedFilter === "veg" ? "active" : ""}`}
-              onClick={() => setSelectedFilter("veg")}
+              onClick={() => {
+                setSelectedFilter("veg");
+              }}
               aria-label="Select veg filter"
               aria-pressed={selectedFilter === "veg"}
             />
